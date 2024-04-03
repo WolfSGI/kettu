@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Mapping
 from kettu.utils import immutable_cached_property
 from kettu.http.response import Response
+from kettu.http.exceptions import HTTPError
 from kettu.http.headers import Query, Cookies, ContentType
 from aioinject.context import SyncInjectionContext, InjectionContext
 
