@@ -3,9 +3,9 @@ from collections.abc import Mapping
 from wrapt import ObjectProxy
 from pathlib import PurePosixPath
 from inspect import signature, _empty as empty, isclass
-from wolf.http import Request
-from kettu.src.kettu.typed import TypedSet
-from kettu.src.kettu.typed import TypedRouter
+from kettu.http.request import Request
+from kettu.typed import TypedSet
+from kettu.typed import TypedRouter
 
 
 C = t.TypeVar("C")

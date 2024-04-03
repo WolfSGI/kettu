@@ -1,6 +1,6 @@
 from autorouting.url import RouteURL
-from wolf.http import Application
-from kettu.src.kettu.traversing.traverser import Traversed
+from kettu.http.app import Application
+from kettu.traversing.traverser import Traversed
 
 
 class PathFragment(str):

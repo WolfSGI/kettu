@@ -3,7 +3,7 @@ import types
 from typing import Sequence, Any, Type, get_args
 from plum import dispatch, overload
 from autorouting import Router as BaseRouter, MatchedRoute
-from wolf.http import HTTPMethod
+from kettu.http.types import HTTPMethod
 from kettu.pipeline import Wrapper, chain_wrap
 
 

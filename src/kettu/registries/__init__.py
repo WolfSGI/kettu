@@ -9,7 +9,7 @@ from plum import Signature
 from prejudice.errors import ConstraintsErrors
 from prejudice.types import Predicate
 from prejudice.utils import resolve_constraints
-from kettu.src.kettu.registries.resolver import SignatureResolver
+from .resolver import SignatureResolver
 
 
 DEFAULT = ""

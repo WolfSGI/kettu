@@ -1,7 +1,7 @@
 import abc
 import uuid
 import typing as t
-from kettu.http import Request
+from kettu.http.request import Request
 
 
 UserID = str | int | uuid.UUID
