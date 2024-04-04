@@ -20,6 +20,10 @@ class ETag(str):
             return f'W/"{self}"'
         return f'"{self}"'
 
+    @classmethod
+    def caster(cls, value: str):
+        return cls(value).as_header()
+
 
 class ETags(frozenset[ETag]):
     # IfMatch / IfMatchNone
@@ -44,3 +48,7 @@ class ETags(frozenset[ETag]):
         if not etags:
             raise ValueError()
         return cls(etags)
+
+    @classmethod
+    def caster(cls, value: str):
+        return cls.from_string(value).as_header()

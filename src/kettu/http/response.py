@@ -1,11 +1,12 @@
 import orjson
 from pathlib import Path
-from typing import Generic, TypeVar, AnyStr
+from typing import Generic, TypeVar, AnyStr, Any
+from collections import UserDict
 from collections.abc import Mapping, Iterable, Iterator, Callable
 from http import HTTPStatus
-from multidict import CIMultiDict
 from collections import deque
-from kettu.http.headers import Cookies
+from kettu.http.headers import Cookies, ContentType, ETag
+from kettu.http.headers.utils import serialize_http_datetime
 from kettu.http.constants import EMPTY_STATUSES, REDIRECT_STATUSES
 from kettu.http.types import HTTPCode
 
@@ -13,19 +14,83 @@ from kettu.http.types import HTTPCode
 BodyT = str | bytes | Iterator[bytes]
 HeadersT = Mapping[str, str] | Iterable[tuple[str, str]]
 F = TypeVar("F", bound=Callable)
+H = TypeVar("H")
 
 
-class Headers(CIMultiDict[str]):
+UNSET = object()
+
+
+def header_property(
+        name: str,
+        *,
+        caster=None,
+        documentation="",
+):
+
+    name = name.title()
+
+    def getter(self):
+        try:
+            return self[name]
+        except KeyError:
+            return UNSET
+
+    def setter(self, value: H):
+        if value is None:
+            del self[name]
+            return
+        if caster is not None:
+            value = caster(value)
+        self[name] = value
+
+    def remover(self):
+        del self[name]
+
+    return property(getter, setter, remover, documentation)
+
+
+class Headers(UserDict[str, str]):
     __slots__ = ("_cookies",)
 
     _cookies: Cookies
 
+    last_modified = header_property(
+        'Last-Modified', caster=serialize_http_datetime
+    )
+
+    accept_ranges = header_property(
+        'Accept-Ranges'
+    )
+
+    content_type = header_property(
+        'Content-Type', caster=ContentType.caster
+    )
+
+    etag = header_property(
+        'ETag', caster=ETag.caster
+    )
+
+    expires = header_property(
+        'Expires', caster=serialize_http_datetime
+    )
+
     def __new__(cls, *args, **kwargs):
         if not kwargs and len(args) == 1 and isinstance(args[0], cls):
             return args[0]
-        inst = super().__new__(cls, *args, **kwargs)
+        inst = super().__new__(cls)
         inst._cookies = None
         return inst
+
+    def __init__(self, value=None):
+        if value:
+            if isinstance(value, dict):
+                super().__init__(value)
+            elif isinstance(value, (list, tuple)):
+                super().__init__()
+                for key, value in value:
+                    self.add(key, value)
+        else:
+            super().__init__()
 
     @property
     def cookies(self) -> Cookies:
@@ -33,29 +98,53 @@ class Headers(CIMultiDict[str]):
             self._cookies = Cookies()
         return self._cookies
 
-    def items(self):
-        yield from super().items()
-        if self._cookies:
-            for cookie in self._cookies.values():
-                yield "Set-Cookie", str(cookie)
+    def __getitem__(self, name: str):
+        name = name.title()
+        return super().__getitem__(name)
 
-    def coalesced_items(self) -> Iterable[tuple[str, str]]:
-        """Coalescence of headers does NOT garanty order of headers.
-        It garanties the order of the header values, though.
-        """
+    def __len__(self):
         if self._cookies:
-            cookies = (str(cookie) for cookie in self._cookies.values())
+            return super().__len__() + 1
+        return super().__len__()
+
+    def __contains__(self, name: str):
+        name = name.title()
+        return super().__contains__(name)
+
+    def __bool__(self):
+        return super().__bool__() or self._cookies
+
+    def __setitem__(self, name: str, value: str):
+        self.add(name, value, merge=False)
+
+    def add(self, name: str, value: str, merge: bool = True):
+        name = name.title()
+
+        if name == 'Set-Cookie':
+            raise KeyError()
+
+        if name in self and merge:
+            value = self[name] + ", " + value
+            super().__setitem__(name, value)
+        else:
+            super().__setitem__(name, value)
+
+    def items(self):
+        if self._cookies:
+            cookies = ",".join(str(c) for c in self._cookies.values())
         else:
             cookies = None
 
-        keys = frozenset(self.keys())
-        for header in keys:
-            values = self.getall(header)
-            if header == "Set-Cookie" and cookies:
-                values = [*values, *cookies]
-            yield header, ", ".join(values)
-        if "Set-Cookie" not in self and cookies:
-            yield "Set-Cookie", ", ".join(cookies)
+        for name, value in super().items():
+            if name == "Set-Cookie":
+                if cookies:
+                    value += ", " + cookies
+                yield name, value
+                cookies = None
+            else:
+                yield name, value
+        if cookies is not None:
+            yield "Set-Cookie", cookies
 
 
 class FileResponse:

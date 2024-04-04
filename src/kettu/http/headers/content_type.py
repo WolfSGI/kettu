@@ -25,6 +25,10 @@ class ContentType:
         self.options = options
 
     @classmethod
+    def caster(cls, value: str):
+        return cls.from_string(value).as_header()
+
+    @classmethod
     def from_string(cls, value: str):
         mimetype, params = parse_header(value)
         return cls(
@@ -113,6 +117,10 @@ class MediaType(ContentType):
             quality=quality
         )
 
+    @classmethod
+    def caster(cls, value: str):
+        return cls.from_string(value).as_header()
+
     def as_header(self):
         return self.mimetype + "".join(
             f";{k}={v}" for k, v in sorted(self.options.items())
@@ -150,6 +158,10 @@ class Accept(tuple[MediaType, ...]):
 
     def as_header(self):
         return ','.join((media.as_header() for media in self))
+
+    @classmethod
+    def caster(cls, value: str):
+        return cls.from_string(value).as_header()
 
     @classmethod
     def from_string(cls, header: str, keep_null: bool = False):

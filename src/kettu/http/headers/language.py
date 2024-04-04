@@ -48,6 +48,10 @@ class Language:
     def as_header(self):
         return f"{str(self)};q={self.quality}"
 
+    @classmethod
+    def caster(cls, value: str):
+        return cls.from_string(value).as_header()
+
     def __lt__(self, other: Any) -> bool:
         if isinstance(other, Language):
             if self.quality == other.quality:
@@ -90,6 +94,10 @@ class Languages(tuple[Language, ...]):
 
     def as_header(self):
         return ','.join((lang.as_header() for lang in self))
+
+    @classmethod
+    def caster(cls, value: str):
+        return cls.from_string(value).as_header()
 
     @classmethod
     def from_string(cls, header: str, keep_null: bool = False):
