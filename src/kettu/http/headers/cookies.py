@@ -10,3 +10,6 @@ class Cookies(dict[str, Cookie]):
     @staticmethod
     def from_string(value: str) -> "Cookies":
         return parse(value)
+
+    def as_header(self) -> str:
+        return ",".join(str(c) for c in self.values())

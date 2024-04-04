@@ -5,6 +5,7 @@ from .ranges import Ranges
 from .content_type import ContentType, MediaType, Accept
 from .language import Language, Languages
 from .etag import ETag, ETags
+from .link import Link, Links
 
 
 __all__ = [
@@ -15,4 +16,5 @@ __all__ = [
     "ContentType", "MediaType", "Accept",
     "Language", "Languages",
     "ETag", "ETags",
+    "Link", "Links"
 ]

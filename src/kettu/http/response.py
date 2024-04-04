@@ -5,7 +5,7 @@ from collections import UserDict
 from collections.abc import Mapping, Iterable, Iterator, Callable
 from http import HTTPStatus
 from collections import deque
-from kettu.http.headers import Cookies, ContentType, ETag
+from kettu.http.headers import Cookies, ContentType, ETag, Links
 from kettu.http.headers.utils import serialize_http_datetime
 from kettu.http.constants import EMPTY_STATUSES, REDIRECT_STATUSES
 from kettu.http.types import HTTPCode
@@ -14,7 +14,6 @@ from kettu.http.types import HTTPCode
 BodyT = str | bytes | Iterator[bytes]
 HeadersT = Mapping[str, str] | Iterable[tuple[str, str]]
 F = TypeVar("F", bound=Callable)
-H = TypeVar("H")
 
 
 UNSET = object()
@@ -35,7 +34,7 @@ def header_property(
         except KeyError:
             return UNSET
 
-    def setter(self, value: H):
+    def setter(self, value):
         if value is None:
             del self[name]
             return
@@ -50,9 +49,10 @@ def header_property(
 
 
 class Headers(UserDict[str, str]):
-    __slots__ = ("_cookies",)
+    __slots__ = ("_cookies", "_links")
 
-    _cookies: Cookies
+    _cookies: Cookies | None
+    _links: Links | None
 
     last_modified = header_property(
         'Last-Modified', caster=serialize_http_datetime
@@ -79,6 +79,7 @@ class Headers(UserDict[str, str]):
             return args[0]
         inst = super().__new__(cls)
         inst._cookies = None
+        inst._links = None
         return inst
 
     def __init__(self, value=None):
@@ -98,21 +99,30 @@ class Headers(UserDict[str, str]):
             self._cookies = Cookies()
         return self._cookies
 
+    @property
+    def links(self) -> Links:
+        if self._links is None:
+            self._links = Links()
+        return self._links
+
     def __getitem__(self, name: str):
         name = name.title()
         return super().__getitem__(name)
 
     def __len__(self):
+        length = len(self.data)
         if self._cookies:
-            return super().__len__() + 1
-        return super().__len__()
+            length += 1
+        if self._links:
+            length += 1
+        return length
 
     def __contains__(self, name: str):
         name = name.title()
         return super().__contains__(name)
 
     def __bool__(self):
-        return super().__bool__() or self._cookies
+        return bool(self.data) or self._cookies or self._links
 
     def __setitem__(self, name: str, value: str):
         self.add(name, value, merge=False)
@@ -120,7 +130,7 @@ class Headers(UserDict[str, str]):
     def add(self, name: str, value: str, merge: bool = True):
         name = name.title()
 
-        if name == 'Set-Cookie':
+        if name in ('Set-Cookie', 'Link'):
             raise KeyError()
 
         if name in self and merge:
@@ -130,21 +140,11 @@ class Headers(UserDict[str, str]):
             super().__setitem__(name, value)
 
     def items(self):
+        yield from super().items()
         if self._cookies:
-            cookies = ",".join(str(c) for c in self._cookies.values())
-        else:
-            cookies = None
-
-        for name, value in super().items():
-            if name == "Set-Cookie":
-                if cookies:
-                    value += ", " + cookies
-                yield name, value
-                cookies = None
-            else:
-                yield name, value
-        if cookies is not None:
-            yield "Set-Cookie", cookies
+            yield "Set-Cookie", self._cookies.as_header()
+        if self._links:
+            yield "Link", self._links.as_header()
 
 
 class FileResponse:

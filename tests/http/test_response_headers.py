@@ -4,6 +4,15 @@ from datetime import datetime
 from kettu.http.response import Headers, UNSET
 
 
+def test_link_container():
+    headers = Headers()
+    headers.links.add("http://example.com/TheBook/chapter2", "previous")
+    assert len(headers) == 1
+    assert list(headers.items()) == [
+        ('Link', '<http://example.com/TheBook/chapter2>; rel=previous')
+    ]
+
+
 def test_etag_property():
     headers = Headers()
     assert headers.etag is UNSET
@@ -75,22 +84,22 @@ def test_empty_headers():
 
 
 def test_add_headers():
-    headers = Headers({'Link': 'test'})
-    assert list(headers.items()) == [('Link', 'test')]
+    headers = Headers({'X-Header': 'test'})
+    assert list(headers.items()) == [('X-Header', 'test')]
     assert len(headers) == 1
 
-    headers.add('Link', 'Another test')
+    headers.add('X-Header', 'Another test')
     assert list(headers.items()) == [
-        ('Link', 'test, Another test')
+        ('X-Header', 'test, Another test')
     ]
     assert len(headers) == 1
 
 
 def test_cookies():
     headers = Headers()
-    len(headers) == 0
+    assert len(headers) == 0
     headers.cookies.set('test', "{'this': 'is json'}")
-    len(headers) == 1
+    assert len(headers) == 1
     assert 'test' in headers.cookies
     assert list(headers.items()) == [
         ('Set-Cookie', 'test="{\'this\': \'is json\'}"; Path=/')
@@ -102,7 +111,7 @@ def test_headers_init():
     It garanties the order of the header values, though.
     """
     headers = Headers([
-        ('Link', 'test'),
+        ('X-Header', 'test'),
         ('X-Robots-Tag', 'noarchive'),
         ('X-Robots-Tag', 'google: noindex, nosnippet')
     ])
@@ -110,7 +119,7 @@ def test_headers_init():
     hamcrest.assert_that(
         list(headers.items()),
         hamcrest.contains_inanyorder(
-            ('Link', 'test'),
+            ('X-Header', 'test'),
             ('X-Robots-Tag', 'noarchive, google: noindex, nosnippet'),
         )
     )
@@ -119,10 +128,10 @@ def test_headers_init():
     hamcrest.assert_that(
         list(headers.items()),
         hamcrest.contains_inanyorder(
-            ('Link', 'test'),
+            ('X-Header', 'test'),
             ('X-Robots-Tag', ('noarchive, google: noindex, nosnippet, '
                                'otherbot: noindex')),
-        )
+    )
     )
 
 
