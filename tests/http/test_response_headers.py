@@ -66,7 +66,7 @@ def test_expires_property():
 def test_last_modified_property():
     headers = Headers()
     assert headers.last_modified is UNSET
-    headers.last_modified = datetime(2024, 4, 4, 20, 7, 00)
+    headers.last_modified = datetime(2024, 4, 4, 18, 7, 00)
     assert headers.last_modified == "Thu, 04 Apr 2024 18:07:00 GMT"
     assert headers == {
         'Last-Modified': "Thu, 04 Apr 2024 18:07:00 GMT"
