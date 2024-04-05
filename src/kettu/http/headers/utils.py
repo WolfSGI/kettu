@@ -12,8 +12,8 @@ _param = re.compile(rf";\s*{_token}=(?:{_token}|{_quoted})", re.ASCII)
 
 
 # Safe characters
-_safe_uri_path_chars = "+&="
-_safe_uri_query_chars = "?/"
+_safe_uri_path_chars = "+&=/"
+_safe_uri_query_chars = "?/="
 _safe_uri_fragment_chars = "?/#+&="
 
 
@@ -22,10 +22,10 @@ def encode_uri(value: str):
     if path:
         path = quote(path, safe=_safe_uri_path_chars)
     if query:
-        query = quote(p.query, safe=_safe_uri_query_chars)
+        query = quote(query, safe=_safe_uri_query_chars)
     if fragment:
         fragment = quote(fragment, safe=_safe_uri_fragment_chars)
-    return urlunsplit(scheme, netloc, path, query, fragment)
+    return urlunsplit((scheme, netloc, path, query, fragment))
 
 
 def parse_header(value: str) -> tuple[str, dict[str, str]]:

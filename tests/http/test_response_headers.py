@@ -28,6 +28,21 @@ def test_link_container():
     assert list(headers.items()) == []
 
 
+def test_location_property():
+    headers = Headers()
+    assert headers.etag is UNSET
+    headers.location = "/somepath"
+    assert headers.location == '/somepath'
+    assert headers == {
+        'Location': '/somepath'
+    }
+    headers.location = "http://search.co.uk/my query?param=песец"
+    assert headers.location == (
+        "http://search.co.uk/my%20query?param=%D0%BF%D0%B5%D1%81%D0%B5%D1%86"
+    )
+    assert len(headers) == 1
+
+
 def test_etag_property():
     headers = Headers()
     assert headers.etag is UNSET
