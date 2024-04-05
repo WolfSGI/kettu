@@ -52,7 +52,7 @@ def test_content_type_property():
 def test_expires_property():
     headers = Headers()
     assert headers.expires is UNSET
-    headers.expires = datetime(2024, 4, 4, 20, 7, 00)
+    headers.expires = datetime(2024, 4, 4, 18, 7, 00)
     assert headers.expires == "Thu, 04 Apr 2024 18:07:00 GMT"
     assert headers == {
         'Expires': "Thu, 04 Apr 2024 18:07:00 GMT"

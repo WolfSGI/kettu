@@ -31,10 +31,11 @@ parse_http_datetime = parsedate_to_datetime
 def serialize_http_datetime(dt: datetime) -> str:
     """Returns an RFC 1123 datetime string
     """
-    dt = dt.astimezone(timezone.utc)
     if dt.tzinfo is None:
         # If the datetime is naive, we assume its utc.
         dt = dt.replace(tzinfo=timezone.utc)
+    else:
+        dt = dt.astimezone(timezone.utc)
     return dt.strftime('%a, %d %b %Y %H:%M:%S GMT')
 
 
