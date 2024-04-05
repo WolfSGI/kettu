@@ -1,12 +1,12 @@
 import pytest
 import hamcrest
 from datetime import datetime
-from kettu.http.response import Headers, UNSET
+from kettu.http.response import ResponseHeaders, UNSET
 from kettu.http.headers import ETag
 
 
 def test_link_container():
-    headers = Headers()
+    headers = ResponseHeaders()
 
     assert "Link" not in headers
     headers.links.add("http://example.com/TheBook/chapter2", "previous")
@@ -30,7 +30,7 @@ def test_link_container():
 
 
 def test_location_property():
-    headers = Headers()
+    headers = ResponseHeaders()
     assert headers.location is UNSET
     headers.location = "/somepath"
     assert headers.location == '/somepath'
@@ -45,7 +45,7 @@ def test_location_property():
 
 
 def test_etag_property():
-    headers = Headers()
+    headers = ResponseHeaders()
     assert headers.etag is UNSET
     headers.etag = "whatever"
     assert headers.etag == '"whatever"'
@@ -66,7 +66,7 @@ def test_etag_property():
 
 
 def test_content_type_property():
-    headers = Headers()
+    headers = ResponseHeaders()
     assert headers.content_type is UNSET
     headers.content_type = "application/json"
     assert headers.content_type == "application/json"
@@ -84,7 +84,7 @@ def test_content_type_property():
 
 
 def test_expires_property():
-    headers = Headers()
+    headers = ResponseHeaders()
     assert headers.expires is UNSET
     headers.expires = datetime(2024, 4, 4, 18, 7, 00)
     assert headers.expires == "Thu, 04 Apr 2024 18:07:00 GMT"
@@ -98,7 +98,7 @@ def test_expires_property():
 
 
 def test_last_modified_property():
-    headers = Headers()
+    headers = ResponseHeaders()
     assert headers.last_modified is UNSET
     headers.last_modified = datetime(2024, 4, 4, 18, 7, 00)
     assert headers.last_modified == "Thu, 04 Apr 2024 18:07:00 GMT"
@@ -112,13 +112,13 @@ def test_last_modified_property():
 
 
 def test_empty_headers():
-    headers = Headers()
+    headers = ResponseHeaders()
     assert list(headers.items()) == []
     assert len(headers) == 0
 
 
 def test_add_headers():
-    headers = Headers({'X-Header': 'test'})
+    headers = ResponseHeaders({'X-Header': 'test'})
     assert list(headers.items()) == [('X-Header', 'test')]
     assert len(headers) == 1
 
@@ -130,12 +130,12 @@ def test_add_headers():
 
 
 def test_headers_idempotency():
-    headers = Headers({'X-Header': 'test'})
-    assert Headers(headers) is headers
+    headers = ResponseHeaders({'X-Header': 'test'})
+    assert ResponseHeaders(headers) is headers
 
 
 def test_headers_update():
-    headers = Headers({'X-Header': 'test'})
+    headers = ResponseHeaders({'X-Header': 'test'})
     headers.update({'X-Header': 'foo'})
     assert headers["x-header"] == "foo"
 
@@ -144,7 +144,7 @@ def test_headers_update():
 
 
 def test_response_cookies():
-    headers = Headers()
+    headers = ResponseHeaders()
     assert len(headers) == 0
     assert "Set-Cookies" not in headers
 
@@ -167,7 +167,7 @@ def test_headers_init():
     """Coalescence of headers does NOT garanty order of headers.
     It garanties the order of the header values, though.
     """
-    headers = Headers([
+    headers = ResponseHeaders([
         ('X-Header', 'test'),
         ('X-Robots-Tag', 'noarchive'),
         ('X-Robots-Tag', 'google: noindex, nosnippet')
@@ -195,7 +195,7 @@ def test_headers_init():
 
 
 def test_headers_coalescence_with_cookies_no_direct_assignation():
-    headers = Headers()
+    headers = ResponseHeaders()
     headers.cookies.set('test', "{'this': 'is json'}")
     headers.add('X-Robots-Tag', 'otherbot: noindex')
 

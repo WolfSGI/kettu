@@ -47,7 +47,7 @@ def header_property(
     return property(getter, setter, remover, documentation)
 
 
-class Headers(MutableMapping[str, str]):
+class ResponseHeaders(MutableMapping[str, str]):
     __slots__ = ("_cookies", "_links", "_headers")
 
     _cookies: Cookies | None
@@ -188,7 +188,7 @@ class FileResponse:
     ):
         self.status = HTTPStatus(status)
         self.filepath = filepath
-        self.headers = Headers(headers)  # idempotent.
+        self.headers = ResponseHeaders(headers)  # idempotent.
         self.block_size = block_size
 
 
@@ -196,7 +196,7 @@ class Response(Generic[F]):
     __slots__ = ("status", "body", "headers", "_finishers")
 
     status: HTTPStatus
-    headers: Headers
+    headers: ResponseHeaders
     body: BodyT | None
     _finishers: deque[F] | None
 
@@ -208,7 +208,7 @@ class Response(Generic[F]):
     ):
         self.status = HTTPStatus(status)
         self.body = body
-        self.headers = Headers(headers)  # idempotent.
+        self.headers = ResponseHeaders(headers)  # idempotent.
         self._finishers = None
 
     def add_finisher(self, task: F):
@@ -246,7 +246,7 @@ class Response(Generic[F]):
         if headers is None:
             headers = {"Content-Type": "application/json"}
         else:
-            headers = Headers(headers)
+            headers = ResponseHeaders(headers)
             headers["Content-Type"] = "application/json"
         return cls(code, data, headers)
 
