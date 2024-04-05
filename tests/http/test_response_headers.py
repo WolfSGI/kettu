@@ -2,6 +2,7 @@ import pytest
 import hamcrest
 from datetime import datetime
 from kettu.http.response import Headers, UNSET
+from kettu.http.headers import ETag
 
 
 def test_link_container():
@@ -30,7 +31,7 @@ def test_link_container():
 
 def test_location_property():
     headers = Headers()
-    assert headers.etag is UNSET
+    assert headers.location is UNSET
     headers.location = "/somepath"
     assert headers.location == '/somepath'
     assert headers == {
@@ -59,6 +60,9 @@ def test_etag_property():
     assert headers == {
         'Etag': '"however"'
     }
+
+    headers.etag = ETag("some value", weak=True)
+    assert headers.etag == 'W/"some value"'
 
 
 def test_content_type_property():

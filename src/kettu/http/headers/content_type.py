@@ -1,5 +1,5 @@
 from fnmatch import fnmatch
-from typing import Mapping, Any, Sequence
+from typing import Mapping, Any, Sequence, Union
 
 from frozendict import frozendict
 
@@ -25,7 +25,9 @@ class ContentType:
         self.options = options
 
     @classmethod
-    def caster(cls, value: str):
+    def caster(cls, value: "str | ContentType"):
+        if isinstance(value, ContentType):
+            return value.as_header()
         return cls.from_string(value).as_header()
 
     @classmethod
