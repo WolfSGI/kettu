@@ -6,11 +6,26 @@ from kettu.http.response import Headers, UNSET
 
 def test_link_container():
     headers = Headers()
+
+    assert "Link" not in headers
     headers.links.add("http://example.com/TheBook/chapter2", "previous")
     assert len(headers) == 1
     assert list(headers.items()) == [
         ('Link', '<http://example.com/TheBook/chapter2>; rel=previous')
     ]
+
+    headers.links.add("/", "next", anchor="#top")
+    assert len(headers) == 1
+    assert list(headers.items()) == [(
+        'Link',
+        '<http://example.com/TheBook/chapter2>; rel=previous, '
+        '</>; rel=next; anchor="#top"'
+    )]
+
+    assert "Link" in headers
+    del headers["Link"]
+    assert len(headers) == 0
+    assert list(headers.items()) == []
 
 
 def test_etag_property():
@@ -95,15 +110,38 @@ def test_add_headers():
     assert len(headers) == 1
 
 
-def test_cookies():
+def test_headers_idempotency():
+    headers = Headers({'X-Header': 'test'})
+    assert Headers(headers) is headers
+
+
+def test_headers_update():
+    headers = Headers({'X-Header': 'test'})
+    headers.update({'X-Header': 'foo'})
+    assert headers["x-header"] == "foo"
+
+    headers.update({'Whatever': '1'})
+    assert headers["whatever"] == "1"
+
+
+def test_response_cookies():
     headers = Headers()
     assert len(headers) == 0
+    assert "Set-Cookies" not in headers
+
     headers.cookies.set('test', "{'this': 'is json'}")
     assert len(headers) == 1
     assert 'test' in headers.cookies
     assert list(headers.items()) == [
         ('Set-Cookie', 'test="{\'this\': \'is json\'}"; Path=/')
     ]
+    assert list(headers) == ['Set-Cookie']
+    assert "Set-Cookie" in headers
+
+    del headers["Set-Cookie"]
+    assert len(headers) == 0
+    assert list(headers.items()) == []
+    assert list(headers) == []
 
 
 def test_headers_init():
@@ -131,8 +169,10 @@ def test_headers_init():
             ('X-Header', 'test'),
             ('X-Robots-Tag', ('noarchive, google: noindex, nosnippet, '
                                'otherbot: noindex')),
+        )
     )
-    )
+
+    assert list(headers) == ['X-Header', "X-Robots-Tag"]
 
 
 def test_headers_coalescence_with_cookies():

@@ -135,7 +135,7 @@ class Link:
 class Links(list[Link]):
 
     def as_header(self) -> str:
-        return ','.join((link.as_header() for link in self))
+        return ', '.join((link.as_header() for link in self))
 
     @classmethod
     def from_string(cls, value):

@@ -1,8 +1,7 @@
 import orjson
 from pathlib import Path
 from typing import Generic, TypeVar, AnyStr, Any
-from collections import UserDict
-from collections.abc import Mapping, Iterable, Iterator, Callable
+from collections.abc import Mapping, Iterable, Iterator, Callable, MutableMapping, Sequence
 from http import HTTPStatus
 from collections import deque
 from kettu.http.headers import Cookies, ContentType, ETag, Links
@@ -48,11 +47,12 @@ def header_property(
     return property(getter, setter, remover, documentation)
 
 
-class Headers(UserDict[str, str]):
-    __slots__ = ("_cookies", "_links")
+class Headers(MutableMapping[str, str]):
+    __slots__ = ("_cookies", "_links", "_headers")
 
     _cookies: Cookies | None
     _links: Links | None
+    _headers: MutableMapping
 
     last_modified = header_property(
         'Last-Modified', caster=serialize_http_datetime
@@ -74,24 +74,25 @@ class Headers(UserDict[str, str]):
         'Expires', caster=serialize_http_datetime
     )
 
-    def __new__(cls, *args, **kwargs):
-        if not kwargs and len(args) == 1 and isinstance(args[0], cls):
-            return args[0]
+    def __new__(
+            cls,
+            data: MutableMapping[str, str] | \
+                Sequence[tuple[str, str]] | None = None
+    ):
+        if data is not None and isinstance(data, cls):
+            return data
         inst = super().__new__(cls)
         inst._cookies = None
         inst._links = None
+        inst._headers = {}
+        if data:
+            if isinstance(data, dict):
+                for key, value in data.items():
+                    inst[key] = value
+            elif isinstance(data, (list, tuple)):
+                for key, value in data:
+                    inst.add(key, value)
         return inst
-
-    def __init__(self, value=None):
-        if value:
-            if isinstance(value, dict):
-                super().__init__(value)
-            elif isinstance(value, (list, tuple)):
-                super().__init__()
-                for key, value in value:
-                    self.add(key, value)
-        else:
-            super().__init__()
 
     @property
     def cookies(self) -> Cookies:
@@ -105,12 +106,14 @@ class Headers(UserDict[str, str]):
             self._links = Links()
         return self._links
 
+    def __repr__(self):
+        return f"<{self.__class__.__name__}: [{len(self)}]>"
+
     def __getitem__(self, name: str):
-        name = name.title()
-        return super().__getitem__(name)
+        return self._headers[name.title()]
 
     def __len__(self):
-        length = len(self.data)
+        length = len(self._headers)
         if self._cookies:
             length += 1
         if self._links:
@@ -119,28 +122,49 @@ class Headers(UserDict[str, str]):
 
     def __contains__(self, name: str):
         name = name.title()
-        return super().__contains__(name)
+        if name == "Link":
+            return bool(self._links)
+        if name == "Set-Cookie":
+            return bool(self._cookies)
+        return name in self._headers
 
     def __bool__(self):
-        return bool(self.data) or self._cookies or self._links
+        return (
+            bool(self._headers) or
+            bool(self._cookies) or
+            bool(self._links)
+        )
 
     def __setitem__(self, name: str, value: str):
-        self.add(name, value, merge=False)
-
-    def add(self, name: str, value: str, merge: bool = True):
         name = name.title()
-
         if name in ('Set-Cookie', 'Link'):
             raise KeyError()
+        self._headers[name] = value
 
-        if name in self and merge:
-            value = self[name] + ", " + value
-            super().__setitem__(name, value)
+    def __delitem__(self, name: str):
+        name = name.title()
+        if name == "Set-Cookie":
+            self._cookies = None
+        elif name == "Link":
+            self._links = None
         else:
-            super().__setitem__(name, value)
+            del self._headers[name]
+
+    def add(self, name: str, value: str, merge: bool = True):
+        if name in self and merge:
+            self[name] += ", " + value
+        else:
+            self[name] = value
+
+    def __iter__(self):
+        yield from self._headers.keys()
+        if self._cookies:
+            yield "Set-Cookie"
+        if self._links:
+            yield "Link"
 
     def items(self):
-        yield from super().items()
+        yield from self._headers.items()
         if self._cookies:
             yield "Set-Cookie", self._cookies.as_header()
         if self._links:
