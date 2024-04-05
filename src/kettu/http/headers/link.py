@@ -1,4 +1,5 @@
 from urllib.parse import quote
+from typing import NamedTuple
 from collections.abc import Sequence
 
 
@@ -13,7 +14,7 @@ class Link:
         "hreflang",
         "type_hint",
         "crossorigin",
-        "link_extension",
+        "extensions",
     )
 
     def __init__(
@@ -26,7 +27,7 @@ class Link:
             hreflang: str | Sequence[str] | None = None,
             type_hint: str | None = None,
             crossorigin: str | None = None,
-            link_extension: Sequence[tuple[str, str]] | None = None,
+            **extensions: str
     ):
         self.target = target
         self.rel = rel
@@ -36,7 +37,51 @@ class Link:
         self.hreflang = hreflang
         self.type_hint = type_hint
         self.crossorigin = crossorigin
-        self.link_extension = link_extension
+        self.extensions = extensions or None
+
+    def __eq__(self, other: 'Link'):
+        return (
+            self.target==other.target,
+            self.rel==other.rel,
+            self.title==other.title,
+            self.title_star==other.title_star,
+            self.anchor==other.anchor,
+            self.hreflang==other.hreflang,
+            self.type_hint==other.type_hint,
+            self.crossorigin==other.crossorigin,
+            self.extensions==other.extensions
+        )
+
+    def __hash__(self):
+        return (
+            hash(self.target),
+            hash(self.rel),
+            hash(self.title),
+            hash(self.title_star),
+            hash(self.anchor),
+            hash(self.hreflang),
+            hash(self.type_hint),
+            hash(self.crossorigin),
+            hash(self.extensions)
+        )
+
+    @classmethod
+    def from_string(cls, value):
+        replace_chars = " '\""
+        # This will raise a ValueError if there no 'rel'
+        url, params = value.split(";", 1)
+        args = {}
+        for param in params.split(";"):
+            key, value = param.split("=")
+            if key == 'title*':
+                key = "title_star"
+            args[key.strip(replace_chars)] = value.strip(replace_chars)
+
+        return cls(
+            url.strip("<> '\""),
+            args.pop('rel'),
+            **args
+        )
 
     def as_header(self):
         header = '<' + quote(self.target, safe=':/') + '>'
@@ -80,9 +125,9 @@ class Link:
             else:
                 raise ValueError()
 
-        if self.link_extension is not None:
+        if self.extensions is not None:
             header += '; '
-            header += '; '.join((f"{k}={v}" for k, v in self.link_extension))
+            header += '; '.join((f"{k}={v}" for k, v in self.extensions))
 
         return header
 
@@ -91,6 +136,13 @@ class Links(list[Link]):
 
     def as_header(self) -> str:
         return ','.join((link.as_header() for link in self))
+
+    @classmethod
+    def from_string(cls, value):
+        return cls((
+            Link.from_string(linkstr)
+            for linkstr in value.split(',')
+        ))
 
     def add(self, *args, **kwargs):
         link = Link(*args, **kwargs)
