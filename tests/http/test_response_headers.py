@@ -175,7 +175,7 @@ def test_headers_init():
     assert list(headers) == ['X-Header', "X-Robots-Tag"]
 
 
-def test_headers_coalescence_with_cookies():
+def test_headers_coalescence_with_cookies_no_direct_assignation():
     headers = Headers()
     headers.cookies.set('test', "{'this': 'is json'}")
     headers.add('X-Robots-Tag', 'otherbot: noindex')

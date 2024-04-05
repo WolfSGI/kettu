@@ -5,7 +5,7 @@ from collections.abc import Mapping, Iterable, Iterator, Callable, MutableMappin
 from http import HTTPStatus
 from collections import deque
 from kettu.http.headers import Cookies, ContentType, ETag, Links
-from kettu.http.headers.utils import serialize_http_datetime
+from kettu.http.headers.utils import serialize_http_datetime, encode_uri
 from kettu.http.constants import EMPTY_STATUSES, REDIRECT_STATUSES
 from kettu.http.types import HTTPCode
 
@@ -72,6 +72,10 @@ class Headers(MutableMapping[str, str]):
 
     expires = header_property(
         'Expires', caster=serialize_http_datetime
+    )
+
+    location = header_property(
+        'Location', caster=encode_uri
     )
 
     def __new__(
@@ -184,7 +188,7 @@ class FileResponse:
     ):
         self.status = HTTPStatus(status)
         self.filepath = filepath
-        self.headers = Headers(headers or ())  # idempotent.
+        self.headers = Headers(headers)  # idempotent.
         self.block_size = block_size
 
 
@@ -204,7 +208,7 @@ class Response(Generic[F]):
     ):
         self.status = HTTPStatus(status)
         self.body = body
-        self.headers = Headers(headers or ())  # idempotent.
+        self.headers = Headers(headers)  # idempotent.
         self._finishers = None
 
     def add_finisher(self, task: F):
@@ -233,10 +237,10 @@ class Response(Generic[F]):
 
     @classmethod
     def to_json(
-        cls,
-        code: HTTPCode = 200,
-        body: BodyT | None = None,
-        headers: HeadersT | None = None,
+            cls,
+            code: HTTPCode = 200,
+            body: BodyT | None = None,
+            headers: HeadersT | None = None,
     ) -> "Response":
         data = orjson.dumps(body)
         if headers is None:
@@ -248,31 +252,27 @@ class Response(Generic[F]):
 
     @classmethod
     def html(
-        cls,
-        code: HTTPCode = 200,
+            cls,
+            code: HTTPCode = 200,
             body: AnyStr = b"",
             headers: HeadersT | None = None,
     ) -> "Response":
-        if headers is None:
-            headers = {"Content-Type": "text/html; charset=utf-8"}
-        else:
-            headers = Headers(headers)
-            headers["Content-Type"] = "text/html; charset=utf-8"
-        return cls(code, body, headers)
+        response = cls(code, body, headers=headers)
+        response.headers.content_type = "text/html; charset=utf-8"
+        return response
 
     @classmethod
     def redirect(
-        cls,
-        location,
-        code: HTTPCode = 303,
-        body: BodyT | None = None,
-        headers: HeadersT | None = None,
+            cls,
+            location: str | None,
+            code: HTTPCode = 303,
+            body: BodyT | None = None,
+            headers: HeadersT | None = None,
     ) -> "Response":
         if code not in REDIRECT_STATUSES:
             raise ValueError(f"{code}: unknown redirection code.")
-        if not headers:
-            headers = {"Location": location}
-        else:
-            headers = Headers(headers)
-            headers["Location"] = location
-        return cls(code, body, headers)
+
+        response = cls(code, body, headers=headers)
+        if location is not None:
+            response.headers.location = location
+        return response

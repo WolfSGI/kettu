@@ -1,4 +1,5 @@
 import re
+from urllib.parse import quote, urlsplit, urlunsplit
 from pathlib import PurePosixPath
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
@@ -8,6 +9,23 @@ from email.utils import parsedate_to_datetime
 # CGI parse header is deprecated.
 _token, _quoted = r"([\w!#$%&'*+\-.^_`|~]+)", r'"([^"]*)"'
 _param = re.compile(rf";\s*{_token}=(?:{_token}|{_quoted})", re.ASCII)
+
+
+# Safe characters
+_safe_uri_path_chars = "+&="
+_safe_uri_query_chars = "?/"
+_safe_uri_fragment_chars = "?/#+&="
+
+
+def encode_uri(value: str):
+    (scheme, netloc, path, query, fragment) = urlsplit(value)
+    if path:
+        path = quote(path, safe=_safe_uri_path_chars)
+    if query:
+        query = quote(p.query, safe=_safe_uri_query_chars)
+    if fragment:
+        fragment = quote(fragment, safe=_safe_uri_fragment_chars)
+    return urlunsplit(scheme, netloc, path, query, fragment)
 
 
 def parse_header(value: str) -> tuple[str, dict[str, str]]:
