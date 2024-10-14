@@ -20,7 +20,7 @@ dependencies = [
   "wrapt",
   "itsdangerous",
   "http_session",
-  "vernacular",
+  "langcodes",
   "autorouting",
   "plum-dispatch",
   "pyhamcrest",

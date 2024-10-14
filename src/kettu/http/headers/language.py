@@ -1,14 +1,13 @@
 from typing import Any, Union, Sequence
-from vernacular.utils import parse_locale
+from langcodes import Language as LangCode
 from kettu.http.headers.constants import WEIGHT_PARAM, Specificity
 
 
 class Language:
-    __slots__ = ("language", "variant", "quality", "specificity")
+    __slots__ = ("language", "quality", "specificity")
 
-    language: str
-    variant: str | None
     quality: float
+    language: LangCode | None
     specificity: Specificity
 
     def __init__(
@@ -16,17 +15,18 @@ class Language:
             locale: str,
             quality: float = 1.0
     ):
-        if locale == '*':
-            self.language = "*"
-            self.variant = None
-            self.specificity = Specificity.NONSPECIFIC
-        else:
-            self.language, self.variant = parse_locale(locale)
+        self.quality = quality
+        if locale != "*":
+            self.language = LangCode.get(locale)
             self.specificity = (
-                Specificity.SPECIFIC if self.variant
+                Specificity.SPECIFIC if (
+                    self.language.territory or self.language.script
+                )
                 else Specificity.PARTIALLY_SPECIFIC
             )
-        self.quality = quality
+        else:
+            self.language = None
+            self.specificity = Specificity.NONSPECIFIC
 
     @classmethod
     def from_string(cls, value: str) -> 'Language':
@@ -41,9 +41,9 @@ class Language:
         return cls(locale.strip())
 
     def __str__(self):
-        if not self.variant:
-            return self.language
-        return f'{self.language}-{self.variant}'
+        if not self.language:
+            return "*"
+        return self.language.to_tag()
 
     def as_header(self):
         return f"{str(self)};q={self.quality}"
@@ -61,10 +61,7 @@ class Language:
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, Language):
-            return (
-                self.language == other.language
-                and self.variant == other.variant
-            )
+            return self.language == other.language
         if isinstance(other, str):
             return str(self) == other
         return False
@@ -74,15 +71,14 @@ class Language:
             return True
 
         if isinstance(other, str):
-            language, variant = parse_locale(other)
+            language = LangCode.get(other)
         else:
             language = other.language
-            variant = other.variant
 
-        if self.specificity == Specificity.PARTIALLY_SPECIFIC or not variant:
-            return language == self.language
+        if self.specificity == Specificity.PARTIALLY_SPECIFIC or not language.territory or not language.script:
+            return language.language == self.language.language
 
-        return (language == self.language and variant == self.variant)
+        return language == self.language
 
 
 class Languages(tuple[Language, ...]):

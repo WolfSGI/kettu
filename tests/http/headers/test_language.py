@@ -3,14 +3,14 @@ from kettu.http.headers import Languages, Language
 
 def test_language():
     lang = Language.from_string('en-EN;q=0.5')
-    assert lang.language == "en"
-    assert lang.variant == "EN"
+    assert lang.language.language == "en"
+    assert lang.language.territory == "EN"
     assert lang == "en-EN"
     assert lang.quality == 0.5
 
     lang = Language.from_string('en-EN ; q=0.555')
-    assert lang.language == "en"
-    assert lang.variant == "EN"
+    assert lang.language.language == "en"
+    assert lang.language.territory == "EN"
     assert lang == "en-EN"
     assert lang.quality == 0.555
     assert lang.as_header() == "en-EN;q=0.555"
