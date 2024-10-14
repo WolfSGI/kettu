@@ -1,5 +1,5 @@
 from kettu.http.headers import Languages, Language
-
+from kettu.http.headers.constants import Specificity
 
 def test_language():
     lang = Language.from_string('en-EN;q=0.5')
@@ -14,6 +14,26 @@ def test_language():
     assert lang == "en-EN"
     assert lang.quality == 0.555
     assert lang.as_header() == "en-EN;q=0.555"
+
+
+def test_language_wildcard_comparison():
+    lang = Language.from_string('*')
+    assert lang.specificity == Specificity.NONSPECIFIC
+    assert lang.language == None
+
+    assert lang != 'en'
+    assert lang.match('en')
+    assert lang.match('en-US')
+
+
+def test_language_partially_specific_comparison():
+    lang = Language.from_string('en')
+    assert lang.specificity == Specificity.PARTIALLY_SPECIFIC
+
+    assert lang != 'en-US'
+    assert lang.match('en')
+    assert lang.match('en-US')
+    assert not lang.match('fr')
 
 
 def test_languages():
