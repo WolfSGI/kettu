@@ -1,6 +1,8 @@
 from typing import NamedTuple
 from pathlib import PurePosixPath
 from functools import cache
+from collections.abc import Hashable, MutableSet
+from orderedsets import OrderedSet
 
 
 def multi_urljoin(*parts):
@@ -68,10 +70,42 @@ known_extensions = {
 }
 
 
-class NeededResources(set[JSResource | CSSResource]):
+class NeededResources(Hashable, MutableSet[JSResource | CSSResource]):
+
+    __hash__ = MutableSet._hash
+
     def __init__(self, root: str | PurePosixPath, *args, **kwargs):
         self.root = root
-        super().__init__(*args, **kwargs)
+        self.data = OrderedSet(*args, **kwargs)
+
+    def __contains__(self, value):
+        return value in self.data
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def __len__(self):
+        return len(self.data)
+
+    def __repr__(self):
+        return repr(self.data)
+
+    def __or__(self, other: set):
+        return NeededResources(self.root, self.data | other)
+
+    def __ior__(self, other: set):
+        self.data |= other
+        return self
+
+    def add(self, item):
+        self.data.add(item)
+
+    def discard(self, item):
+        self.data.discard(item)
+
+    def precede(self, other: set):
+        self.data = OrderedSet((*other, *self.data))
+        return self
 
     def add_resource(
         self,
