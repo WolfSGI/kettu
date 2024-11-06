@@ -92,6 +92,20 @@ class Registry(UserDict[Signature, ObjectProxy]):
 
         return register_resolver
 
+    def __ior__(self, other: 'Registry'):
+        result = super().__ior__(other)
+        result.resolver = SignatureResolver()
+        for signature in self.keys():
+            result.resolver.register(signature)
+        return result
+
+    def __or__(self, other: 'Registry'):
+        result = super().__or__(other)
+        result.resolver = SignatureResolver()
+        for signature in self.keys():
+            result.resolver.register(signature)
+        return result
+
 
 class TypedRegistry(Registry):
     Types: ClassVar[type[NamedTuple]]

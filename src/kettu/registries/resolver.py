@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 
 class SignatureResolver:
+
     def __init__(
         self,
         signatures: Sequence[Signature] | None = None,
