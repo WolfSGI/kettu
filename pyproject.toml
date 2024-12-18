@@ -27,6 +27,7 @@ dependencies = [
   "biscuits >= 0.3.0",
   "multidict >= 5.1",
   "multifruits >= 0.1.5",
+  "orderedsets",
 ]
 
 [project.optional-dependencies]
