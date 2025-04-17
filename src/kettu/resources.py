@@ -103,6 +103,9 @@ class NeededResources(Hashable, MutableSet[JSResource | CSSResource]):
     def discard(self, item):
         self.data.discard(item)
 
+    def update(self, other: set):
+        self.data.update(other)
+
     def precede(self, other: set):
         self.data = OrderedSet((*other, *self.data))
         return self
