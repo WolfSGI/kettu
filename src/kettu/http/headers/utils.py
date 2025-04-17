@@ -1,4 +1,5 @@
 import re
+from urllib.request import parse_http_list
 from urllib.parse import quote, urlsplit, urlunsplit
 from pathlib import PurePosixPath
 from datetime import datetime, timezone
@@ -17,6 +18,14 @@ _safe_uri_query_chars = "?/="
 _safe_uri_fragment_chars = "?/#+&="
 
 
+def dequote(value: str) -> str:
+    """If a value has double quotes around it, remove them.
+    """
+    if (len(value) >= 2 and value[0] == value[-1]) and value.startswith('"'):
+        return value[1:-1]
+    return value
+
+
 def encode_uri(value: str):
     (scheme, netloc, path, query, fragment) = urlsplit(value)
     if path:
@@ -26,6 +35,10 @@ def encode_uri(value: str):
     if fragment:
         fragment = quote(fragment, safe=_safe_uri_fragment_chars)
     return urlunsplit((scheme, netloc, path, query, fragment))
+
+
+def parse_list_header(value: str) -> tuple[str]:
+    return tuple((dequote(header) for header in parse_http_list(value)))
 
 
 def parse_header(value: str) -> tuple[str, dict[str, str]]:

@@ -6,6 +6,7 @@ from kettu.typed.datastructures import TypedValue
 
 
 class TypedRouter(TypedValue[t.Any, Router], defaultdict):
+
     def __init__(self):
         defaultdict.__init__(self, Router)
 

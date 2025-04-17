@@ -21,6 +21,7 @@ class ProxyMetadata(NamedTuple):
     isclass: bool
     name: str = ""
     title: str = ""
+    order: int = 0
     description: str = ""
     classifiers: set[str] = set()
     conditions: Sequence[Predicate] | None = None
@@ -47,7 +48,10 @@ class Proxy(ObjectProxy):
 
 
 def base_sorter(result: tuple[Signature, Proxy]):
-    return result[0], result[1].__metadata__.name
+    return (
+        result[0],
+        result[1].__metadata__.name
+    )
 
 
 class Registry(UserDict[Signature, ObjectProxy]):
