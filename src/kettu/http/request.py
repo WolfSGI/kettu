@@ -1,3 +1,4 @@
+
 import urllib.parse
 from typing import TypeVar, Generic
 from abc import ABC, abstractmethod
@@ -6,7 +7,8 @@ from kettu.utils import immutable_cached_property
 from kettu.http.response import Response
 from kettu.http.exceptions import HTTPError
 from kettu.http.headers import Query, Cookies, ContentType
-from aioinject.context import SyncInjectionContext, InjectionContext
+from dishka.container import ContextWrapper, AsyncContextWrapper
+from dishka.async_container import
 
 
 E = TypeVar("E", bound=Mapping)
@@ -15,7 +17,7 @@ E = TypeVar("E", bound=Mapping)
 class Request(ABC, Generic[E]):
     environ: E
     response_cls: type[Response]
-    context: SyncInjectionContext | InjectionContext
+    context: ContextWrapper | AsyncContextWrapper
 
     @property
     @abstractmethod

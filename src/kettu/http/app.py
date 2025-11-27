@@ -2,12 +2,12 @@ from abc import ABC, abstractmethod
 from kettu.http.request import Request
 from kettu.http.response import Response, FileResponse
 from kettu.pluggability import Installable
-from aioinject import Container
+from dishka import Container, AsyncContainer
 
 
 class Application(ABC):
 
-    services: Container
+    services: Container | AsyncContainer
 
     def use(self, *components: Installable):
         for component in components:
