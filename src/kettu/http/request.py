@@ -1,21 +1,24 @@
+
 import urllib.parse
-from typing import TypeVar, Generic
+from typing import TypeVar, Generic, Any
 from abc import ABC, abstractmethod
 from collections.abc import Mapping
 from kettu.utils import immutable_cached_property
 from kettu.http.response import Response
 from kettu.http.exceptions import HTTPError
 from kettu.http.headers import Query, Cookies, ContentType
-from aioinject.context import SyncInjectionContext, InjectionContext
 
 
 E = TypeVar("E", bound=Mapping)
+T = TypeVar('T')
 
 
 class Request(ABC, Generic[E]):
     environ: E
     response_cls: type[Response]
-    context: SyncInjectionContext | InjectionContext
+
+    @abstractmethod
+    def get(self, cls: type[T], default: Any = None) -> T: ...
 
     @property
     @abstractmethod

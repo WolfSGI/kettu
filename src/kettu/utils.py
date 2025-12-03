@@ -1,7 +1,7 @@
 from inspect import Signature
 from functools import cached_property, cache
 from types import FunctionType
-from aioinject.providers import Dependency
+from typing import NamedTuple
 
 
 class immutable_cached_property(cached_property):
@@ -10,6 +10,11 @@ class immutable_cached_property(cached_property):
 
     def __delete__(self, instance):
         del instance.__dict__[self.attrname]
+
+
+class Dependency(NamedTuple):
+    name: str
+    type_: type
 
 
 @cache
