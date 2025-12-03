@@ -16,7 +16,7 @@ dependencies = [
   "frozendict",
   "orjson",
   "prejudice",
-  "aioinject >= 0.30.0",
+  "dishka >= 1.7",
   "wrapt",
   "itsdangerous",
   "http_session",
