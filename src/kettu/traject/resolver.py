@@ -4,15 +4,14 @@ from wrapt import ObjectProxy
 from pathlib import PurePosixPath
 from inspect import signature, _empty as empty, isclass
 from kettu.http.request import Request
-from kettu.typed import TypedSet
-from kettu.typed import TypedRouter
+from kettu.typed import TypedSet, TypedRouter
 
 
 C = t.TypeVar("C")
 Factory = t.Callable[[Request, t.Any, Mapping[str, t.Any]], C]
 
 
-class Traversed(ObjectProxy):
+class Located(ObjectProxy):
     __parent__: t.Any
     __path__: str
     __id__: str | None
@@ -22,7 +21,7 @@ class Traversed(ObjectProxy):
         super().__init__(wrapped)
         self.__parent__ = parent
         self.__id__ = id
-        if type(parent) is Traversed:
+        if type(parent) is Located:
             self.__path__ = f"{parent.__path__}/{path}"
         else:
             self.__path__ = path
@@ -61,7 +60,7 @@ class ViewRegistry(TypedRouter):
     pass
 
 
-class Traverser(TypedRouter):
+class ContextRegistry(TypedRouter):
     __slots__ = ("_reverse",)
 
     def __init__(self):
@@ -82,7 +81,7 @@ class Traverser(TypedRouter):
         self[root].add(path, method, factory, **kwargs)
         self._reverse.add(sig.return_annotation, Node(root, path))
 
-    def traverse(
+    def resolve(
         self,
         root: t.Any,
         path: str,
@@ -97,11 +96,11 @@ class Traverser(TypedRouter):
                     obj = found.routed(request, root, **found.params)
                     if obj is None:
                         raise LookupError(stub)
-                    traversed = Traversed(obj, parent=root, path=stub)
+                    located = Located(obj, parent=root, path=stub)
                     if not branch:
-                        return traversed, ""
-                    return self.traverse(
-                        traversed, branch, method, request, partial=partial
+                        return located, ""
+                    return self.resolve(
+                        located, branch, method, request, partial=partial
                     )
         if partial:
             return root, path
@@ -143,12 +142,12 @@ class Traverser(TypedRouter):
         # No path is found
         raise LookupError("No path found.")
 
-    def __or__(self, other: "Traverser"):
-        new: Traverser = super().__or__(other)
+    def __or__(self, other: "ContextRegistry"):
+        new: ContextRegistry = super().__or__(other)
         new._reverse = self._reverse | other._reverse
         return new
 
-    def __ior__(self, other: "Traverser"):
-        new: Traverser = super().__ior__(other)
+    def __ior__(self, other: "ContextRegistry"):
+        new: ContextRegistry = super().__ior__(other)
         new._reverse |= other._reverse
         return new

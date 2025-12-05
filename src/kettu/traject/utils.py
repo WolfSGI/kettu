@@ -1,6 +1,6 @@
 from autorouting.url import RouteURL
 from kettu.http.app import Application
-from kettu.traversing.traverser import Traversed
+from kettu.traject.resolver import Located
 
 
 class PathFragment(str):
@@ -19,7 +19,7 @@ def path_for(request, context):
     def resolve_path(target, name, **params):
         root = request.get(Application)
 
-        if type(context) is Traversed:
+        if type(context) is Located:
             root_path = PathFragment(context.__path__)
         else:
             root_path = PathFragment('/')
