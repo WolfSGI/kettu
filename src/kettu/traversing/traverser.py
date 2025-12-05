@@ -15,10 +15,13 @@ Factory = t.Callable[[Request, t.Any, Mapping[str, t.Any]], C]
 class Traversed(ObjectProxy):
     __parent__: t.Any
     __path__: str
+    __name__: str | None
 
-    def __init__(self, wrapped, *, parent: t.Any, path: str):
+    def __init__(self, wrapped, *,
+                 parent: t.Any, path: str, name: str | None = None):
         super().__init__(wrapped)
         self.__parent__ = parent
+        self.__name__ = name
         if type(parent) is Traversed:
             self.__path__ = f"{parent.__path__}/{path}"
         else:
