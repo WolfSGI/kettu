@@ -1,6 +1,6 @@
 import pytest
 from webtest.app import TestRequest as Request
-from kettu.http.headers import Query
+from kettu.headers import Query
 
 
 def test_query():

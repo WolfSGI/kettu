@@ -1,4 +1,4 @@
-from kettu.http.headers import ETag, ETags
+from kettu.headers import ETag, ETags
 
 
 def test_etag():

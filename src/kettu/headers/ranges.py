@@ -1,5 +1,5 @@
 from typing import NamedTuple, Sequence
-from kettu.http.exceptions import HTTPError
+from kettu.exceptions import HTTPError
 
 
 class Ranges(NamedTuple):

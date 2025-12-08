@@ -1,4 +1,4 @@
-from kettu.http.headers import Authorization
+from kettu.headers import Authorization
 
 
 def test_authorization_header():

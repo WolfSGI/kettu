@@ -1,4 +1,4 @@
-from kettu.http.headers.link import Link, Links
+from kettu.headers.link import Link, Links
 
 
 def test_simple_link():

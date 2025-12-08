@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from collections.abc import Iterator, Sequence
-from kettu.http.types import HTTPMethod
+from kettu.types import HTTPMethod
 
 
 Header = tuple[str, str]

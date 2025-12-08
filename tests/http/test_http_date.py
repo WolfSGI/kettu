@@ -1,5 +1,5 @@
 from datetime import datetime, timezone, timedelta
-from kettu.http.headers.utils import (
+from kettu.headers.utils import (
     parse_http_datetime, serialize_http_datetime
 )
 

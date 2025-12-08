@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from kettu.http.types import HTTPCode
+from kettu.types import HTTPCode
 
 
 class ParsingException(ValueError):

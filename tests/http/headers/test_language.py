@@ -1,5 +1,5 @@
-from kettu.http.headers import Languages, Language
-from kettu.http.headers.constants import Specificity
+from kettu.headers import Languages, Language
+from kettu.headers.constants import Specificity
 
 def test_language():
     lang = Language.from_string('en-EN;q=0.5')

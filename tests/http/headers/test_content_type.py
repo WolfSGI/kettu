@@ -1,4 +1,4 @@
-from kettu.http.headers import ContentType
+from kettu.headers import ContentType
 
 
 def test_content_type():

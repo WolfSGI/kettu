@@ -1,6 +1,6 @@
 import pytest
 from http import HTTPStatus
-from kettu.http.exceptions import HTTPError
+from kettu.exceptions import HTTPError
 
 
 def test_exception():

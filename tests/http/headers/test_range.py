@@ -1,4 +1,4 @@
-from kettu.http.headers import Ranges
+from kettu.headers import Ranges
 
 
 def test_range():

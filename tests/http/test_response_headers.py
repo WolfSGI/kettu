@@ -1,8 +1,8 @@
 import pytest
 import hamcrest
 from datetime import datetime
-from kettu.http.response import ResponseHeaders, UNSET
-from kettu.http.headers import ETag
+from kettu.response import ResponseHeaders, UNSET
+from kettu.headers import ETag
 
 
 def test_link_container():

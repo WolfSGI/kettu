@@ -4,10 +4,10 @@ from typing import Generic, TypeVar, AnyStr, Any
 from collections.abc import Mapping, Iterable, Iterator, Callable, MutableMapping, Sequence
 from http import HTTPStatus
 from collections import deque
-from kettu.http.headers import Cookies, ContentType, ETag, Links
-from kettu.http.headers.utils import serialize_http_datetime, encode_uri
-from kettu.http.constants import EMPTY_STATUSES, REDIRECT_STATUSES
-from kettu.http.types import HTTPCode
+from kettu.headers import Cookies, ContentType, ETag, Links
+from kettu.headers.utils import serialize_http_datetime, encode_uri
+from kettu.constants import EMPTY_STATUSES, REDIRECT_STATUSES
+from kettu.types import HTTPCode
 
 
 BodyT = str | bytes | Iterator[bytes]
@@ -173,106 +173,3 @@ class ResponseHeaders(MutableMapping[str, str]):
             yield "Set-Cookie", self._cookies.as_header()
         if self._links:
             yield "Link", self._links.as_header()
-
-
-class FileResponse:
-
-    __slots__ = ("status", "block_size", "headers", "filepath")
-
-    def __init__(
-        self,
-        filepath: Path,
-        status: HTTPCode = 200,
-        block_size: int = 4096,
-        headers: HeadersT | None = None,
-    ):
-        self.status = HTTPStatus(status)
-        self.filepath = filepath
-        self.headers = ResponseHeaders(headers)  # idempotent.
-        self.block_size = block_size
-
-
-class Response(Generic[F]):
-    __slots__ = ("status", "body", "headers", "_finishers")
-
-    status: HTTPStatus
-    headers: ResponseHeaders
-    body: BodyT | None
-    _finishers: deque[F] | None
-
-    def __init__(
-        self,
-        status: HTTPCode = 200,
-        body: BodyT | None = None,
-        headers: HeadersT | None = None,
-    ):
-        self.status = HTTPStatus(status)
-        self.body = body
-        self.headers = ResponseHeaders(headers)  # idempotent.
-        self._finishers = None
-
-    def add_finisher(self, task: F):
-        if self._finishers is None:
-            self._finishers = deque([task])
-        else:
-            self._finishers.append(task)
-
-    @property
-    def cookies(self) -> Cookies:
-        return self.headers.cookies
-
-    def __iter__(self) -> Iterator[bytes]:
-        if self.status not in EMPTY_STATUSES:
-            if self.body is None:
-                yield self.status.description.encode()
-            elif isinstance(self.body, bytes):
-                yield self.body
-            elif isinstance(self.body, str):
-                yield self.body.encode()
-            elif isinstance(self.body, Iterator):
-                yield from self.body
-            else:
-                raise TypeError(
-                    f"Body of type {type(self.body)!r} is not supported.")
-
-    @classmethod
-    def to_json(
-            cls,
-            code: HTTPCode = 200,
-            body: BodyT | None = None,
-            headers: HeadersT | None = None,
-    ) -> "Response":
-        data = orjson.dumps(body)
-        if headers is None:
-            headers = {"Content-Type": "application/json"}
-        else:
-            headers = ResponseHeaders(headers)
-            headers["Content-Type"] = "application/json"
-        return cls(code, data, headers)
-
-    @classmethod
-    def html(
-            cls,
-            code: HTTPCode = 200,
-            body: AnyStr = b"",
-            headers: HeadersT | None = None,
-    ) -> "Response":
-        response = cls(code, body, headers=headers)
-        response.headers.content_type = "text/html; charset=utf-8"
-        return response
-
-    @classmethod
-    def redirect(
-            cls,
-            location: str | None,
-            code: HTTPCode = 303,
-            body: BodyT | None = None,
-            headers: HeadersT | None = None,
-    ) -> "Response":
-        if code not in REDIRECT_STATUSES:
-            raise ValueError(f"{code}: unknown redirection code.")
-
-        response = cls(code, body, headers=headers)
-        if location is not None:
-            response.headers.location = location
-        return response

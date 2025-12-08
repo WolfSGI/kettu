@@ -1,11 +1,9 @@
 from fnmatch import fnmatch
 from typing import Mapping, Any, Sequence, Union
-
 from frozendict import frozendict
-
-from kettu.http.headers.constants import WEIGHT, Specificity
-from kettu.http.types import MIMEType
-from kettu.http.headers.utils import parse_header
+from kettu.headers.constants import WEIGHT, Specificity
+from kettu.types import MIMEType
+from kettu.headers.utils import parse_header
 
 
 class ContentType:

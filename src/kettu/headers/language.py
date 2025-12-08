@@ -1,6 +1,6 @@
 from typing import Any, Union, Sequence
 from langcodes import Language as LangCode
-from kettu.http.headers.constants import WEIGHT_PARAM, Specificity
+from kettu.headers.constants import WEIGHT_PARAM, Specificity
 
 
 class Language:

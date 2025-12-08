@@ -1,4 +1,4 @@
-from kettu.http.headers import utils
+from kettu.headers import utils
 
 
 def test_encode_uri():

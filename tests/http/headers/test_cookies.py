@@ -1,5 +1,5 @@
 from biscuits import Cookie
-from kettu.http.headers import Cookies
+from kettu.headers import Cookies
 
 
 def test_request_parse_cookies():

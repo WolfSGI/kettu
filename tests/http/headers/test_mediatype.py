@@ -1,4 +1,4 @@
-from kettu.http.headers import Accept
+from kettu.headers import Accept
 
 
 def test_accept():

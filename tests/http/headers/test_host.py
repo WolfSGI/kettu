@@ -1,4 +1,4 @@
-from kettu.http.headers.utils import parse_host
+from kettu.headers.utils import parse_host
 
 
 def test_host():
