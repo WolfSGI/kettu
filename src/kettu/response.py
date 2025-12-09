@@ -75,7 +75,7 @@ class ResponseHeaders(MutableMapping[str, str]):
     )
 
     location = header_property(
-        'Location', caster=encode_uri
+        'Location',
     )
 
     def __new__(
