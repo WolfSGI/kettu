@@ -1,3 +1,4 @@
+
 import orjson
 from pathlib import Path
 from typing import Generic, TypeVar, AnyStr, Any

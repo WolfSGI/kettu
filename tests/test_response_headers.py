@@ -37,9 +37,11 @@ def test_location_property():
     assert headers == {
         'Location': '/somepath'
     }
+
+    # location assignment will not encode the url.
     headers.location = "http://search.co.uk/my query?param=песец"
     assert headers.location == (
-        "http://search.co.uk/my%20query?param=%D0%BF%D0%B5%D1%81%D0%B5%D1%86"
+        "http://search.co.uk/my query?param=песец"
     )
     assert len(headers) == 1
 
