@@ -1,5 +1,4 @@
 from urllib.parse import quote
-from typing import NamedTuple
 from collections.abc import Sequence
 
 
@@ -41,15 +40,15 @@ class Link:
 
     def __eq__(self, other: 'Link'):
         return (
-            self.target==other.target,
-            self.rel==other.rel,
-            self.title==other.title,
-            self.title_star==other.title_star,
-            self.anchor==other.anchor,
-            self.hreflang==other.hreflang,
-            self.type_hint==other.type_hint,
-            self.crossorigin==other.crossorigin,
-            self.extensions==other.extensions
+            self.target == other.target,
+            self.rel == other.rel,
+            self.title == other.title,
+            self.title_star == other.title_star,
+            self.anchor == other.anchor,
+            self.hreflang == other.hreflang,
+            self.type_hint == other.type_hint,
+            self.crossorigin == other.crossorigin,
+            self.extensions == other.extensions
         )
 
     def __hash__(self):

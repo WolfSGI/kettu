@@ -75,7 +75,11 @@ class Language:
         else:
             language = other.language
 
-        if self.specificity == Specificity.PARTIALLY_SPECIFIC or not language.territory or not language.script:
+        if self.specificity == (
+                Specificity.PARTIALLY_SPECIFIC or
+                not language.territory or
+                not language.script
+        ):
             return language.language == self.language.language
 
         return language == self.language

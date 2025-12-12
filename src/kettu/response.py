@@ -1,14 +1,8 @@
-
-import orjson
-from pathlib import Path
-from typing import Generic, TypeVar, AnyStr, Any
-from collections.abc import Mapping, Iterable, Iterator, Callable, MutableMapping, Sequence
-from http import HTTPStatus
-from collections import deque
+from typing import TypeVar
+from collections.abc import (
+    Mapping, Iterable, Iterator, Callable, MutableMapping, Sequence)
 from kettu.headers import Cookies, ContentType, ETag, Links
-from kettu.headers.utils import serialize_http_datetime, encode_uri
-from kettu.constants import EMPTY_STATUSES, REDIRECT_STATUSES
-from kettu.types import HTTPCode
+from kettu.headers.utils import serialize_http_datetime
 
 
 BodyT = str | bytes | Iterator[bytes]
@@ -81,8 +75,8 @@ class ResponseHeaders(MutableMapping[str, str]):
 
     def __new__(
             cls,
-            data: MutableMapping[str, str] | \
-                Sequence[tuple[str, str]] | None = None
+            data: (MutableMapping[str, str] |
+                   Sequence[tuple[str, str]] | None) = None
     ):
         if data is not None and isinstance(data, cls):
             return data

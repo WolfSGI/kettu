@@ -1,5 +1,5 @@
 from fnmatch import fnmatch
-from typing import Mapping, Any, Sequence, Union
+from typing import Mapping, Any, Sequence
 from frozendict import frozendict
 from kettu.headers.constants import WEIGHT, Specificity
 from kettu.types import MIMEType
@@ -95,7 +95,7 @@ class MediaType(ContentType):
         elif "/" in mimetype:
             maintype, _, subtype = mimetype.partition("/")
             if not subtype:
-                subtype  = "*"
+                subtype = "*"
             elif maintype == '*' and subtype != '*':
                 raise ValueError()
         else:
