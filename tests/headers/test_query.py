@@ -9,6 +9,18 @@ def test_query():
     assert len(q) == 0
 
 
+def test_default():
+    q = Query.from_string('')
+    assert q.get('whatever', 1) == 1
+    assert q.get('whatever', default=1) == 1
+
+    q = Query.from_string('page=1')
+    assert q.get('page', '1') == '1'
+    assert q.get('page') == '1'
+    assert q.get('page', 2) == '1'
+    assert q.get('page', default=2) == '1'
+
+
 def test_float_should_cast_to_float():
     request = Request.blank('/?key=1', method='GET')
     query = Query.from_string(request.environ['QUERY_STRING'])
