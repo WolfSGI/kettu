@@ -1,4 +1,4 @@
-from .authorization import Authorization
+from .authorization import Authorization, DigestAuthParams
 from .cookies import Cookie, Cookies
 from .query import Query
 from .ranges import Ranges
@@ -12,7 +12,7 @@ from .utils import encode_uri, serialize_http_datetime
 
 
 __all__ = [
-    "Authorization",
+    "Authorization", "DigestAuthParams",
     "Cookie", "Cookies",
     "Query",
     "Ranges",
