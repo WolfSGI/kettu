@@ -9,8 +9,6 @@ from kettu.headers.utils import parse_header
 class ContentType:
     __slots__ = ("mimetype", "options")
 
-    quality: float
-    formatted: str
     mimetype: MIMEType
     options: Mapping[str, str]
 
@@ -36,7 +34,7 @@ class ContentType:
             options=frozendict(params)
         )
 
-    def as_header(self):
+    def as_header(self) -> str:
         return self.mimetype + "".join(
             f";{k}={v}" for k, v in sorted(self.options.items())
         )
@@ -45,7 +43,7 @@ class ContentType:
         return bool(self.mimetype)
 
     def __str__(self):
-        return self.formatted
+        return self.as_header()
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, ContentType):

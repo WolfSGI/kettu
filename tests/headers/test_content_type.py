@@ -19,3 +19,14 @@ def test_content_type():
     ct = ContentType.from_string('')
     assert ct.mimetype == ""
     assert ct.options == {}
+
+
+def test_content_type_as_string():
+
+    header = (
+        '''Message/Partial; number=2; total=3; '''
+        '''id="oc=jpbe0M2Yt4s@thumper.bellcore.com";'''
+    )
+
+    ct = ContentType.from_string(header)
+    assert str(ct) == "message/partial;id=oc=jpbe0M2Yt4s@thumper.bellcore.com;number=2;total=3"
